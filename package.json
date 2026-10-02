@@ -1,0 +1,52 @@
+{
+	"name": "n8n-nodes-verimor",
+	"version": "0.1.0",
+	"description": "Unofficial community n8n node for the Verimor SMS, Switch and WhatsApp APIs. Not validated against the live Verimor services.",
+	"license": "MIT",
+	"homepage": "https://github.com/0Baris/verimor-n8n",
+	"keywords": [
+		"n8n-community-node-package",
+		"verimor",
+		"sms",
+		"whatsapp"
+	],
+	"author": {
+		"name": "Baris Cem Ant",
+		"email": "147310182+0Baris@users.noreply.github.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/0Baris/verimor-n8n.git"
+	},
+	"scripts": {
+		"build": "n8n-node build",
+		"lint": "n8n-node lint",
+		"lint:fix": "n8n-node lint --fix",
+		"test": "n8n-node build && node --test test/*.test.js"
+	},
+	"files": [
+		"dist",
+		"!dist/tsconfig.tsbuildinfo"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"strict": true,
+		"credentials": [
+			"dist/credentials/VerimorSmsApi.credentials.js",
+			"dist/credentials/VerimorSwitchApi.credentials.js",
+			"dist/credentials/VerimorWhatsAppApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/Verimor/Verimor.node.js"
+		]
+	},
+	"devDependencies": {
+		"@n8n/node-cli": "0.50.4",
+		"eslint": "9.32.0",
+		"prettier": "3.6.2",
+		"typescript": "5.9.2"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	}
+}

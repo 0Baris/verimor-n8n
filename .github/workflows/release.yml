@@ -1,0 +1,68 @@
+name: Release n8n node
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["22", "24"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
+  build:
+    needs: [quality]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          cache: npm
+          package-manager-cache: false
+      - run: sh scripts/check-version.sh "${GITHUB_REF_NAME}"
+      - run: npm ci
+      - run: npm run build
+      - run: sh scripts/test-consumer.sh
+      - run: mkdir -p build/dist && npm pack --pack-destination build/dist
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: verimor-n8n-${{ github.ref_name }}
+          path: build/dist/*.tgz
+          if-no-files-found: error
+
+  github-release:
+    needs: [build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: verimor-n8n-${{ github.ref_name }}
+          path: release
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create "${GITHUB_REF_NAME}" release/*.tgz
+          --verify-tag --title "Verimor n8n node ${GITHUB_REF_NAME}"
+          --notes-file CHANGELOG.md
