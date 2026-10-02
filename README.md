@@ -33,7 +33,7 @@ Her ürünün ayrı credential'ı vardır:
 - **Verimor Switch API**: API anahtarı, base URL. Test: kuyruk listesi.
 - **Verimor WhatsApp API**: API anahtarı (`x-api-key`), base URL. Test yalnız erişilebilirliği kontrol eder; WhatsApp'ta yan etkisiz kimlik doğrulayan bir uç yoktur.
 
-Base URL'yi yalnız test sunucusuna yönlendirmek için değiştirin.
+Base URL varsayılan olarak Verimor'un adresidir (SMS `https://sms.verimor.com.tr`, Switch `https://api.bulutsantralim.com`, WhatsApp `https://wapi.verimor.com.tr`). İstekleri başka bir sunucuya, örneğin kendi proxy'nize veya bir test sunucusuna göndermek için değiştirebilirsiniz. Mutlak bir `http://` veya `https://` adresi girin; IP, port ve `http://10.0.0.5:8080/verimor` gibi bir alt yol korunur.
 
 ## Güvenlik ve maliyet
 

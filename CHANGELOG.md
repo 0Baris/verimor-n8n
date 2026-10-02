@@ -1,5 +1,10 @@
 # Değişiklik günlüğü / Changelog
 
+## 0.2.1
+
+- Credential'lardaki Base URL açıklaması netleşti: varsayılan Verimor'un adresidir; kendi sunucunuz veya proxy için değiştirilebilir, IP, port ve alt yol korunur (testle doğrulandı).
+- The credentials' Base URL description is clearer: Verimor's address is the default and can be changed to your own server or proxy; an IP, a port and a path prefix are kept (now tested).
+
 ## 0.2.0
 
 - Yeni eylemler: SMS Send OTP, Get Many Inbound Messages, Get Many Sender IDs; Switch Get Many Call Records; WhatsApp Send Bulk Message, Get Message, Get Many Messages.
