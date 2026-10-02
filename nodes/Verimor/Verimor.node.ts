@@ -1,5 +1,4 @@
 import type {
-	IDataObject,
 	IExecuteFunctions,
 	ILoadOptionsFunctions,
 	INodeExecutionData,
@@ -9,35 +8,11 @@ import type {
 } from 'n8n-workflow';
 import { NodeApiError, NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 
+import { run } from './actions';
 import { OPERATIONS, type Product } from './operations.gen';
-import { callOperation, findOperation } from './transport';
 
 const SEND_WARNING =
 	'Each execution sends a real message or call and may cost money. Keep "Retry On Fail" off unless duplicates are acceptable.';
-
-function parseJson(context: IExecuteFunctions, name: string, itemIndex: number): IDataObject {
-	const raw = context.getNodeParameter(name, itemIndex, '{}') as string | IDataObject;
-	if (typeof raw === 'object' && raw !== null) {
-		return raw;
-	}
-	const text = String(raw).trim();
-	if (text === '') {
-		return {};
-	}
-	try {
-		const value = JSON.parse(text) as unknown;
-		if (value && typeof value === 'object' && !Array.isArray(value)) {
-			return value as IDataObject;
-		}
-	} catch {
-		// Reported below.
-	}
-	throw new NodeOperationError(context.getNode(), `"${name}" must be a JSON object`, { itemIndex });
-}
-
-function compact(values: IDataObject): IDataObject {
-	return Object.fromEntries(Object.entries(values).filter(([, value]) => value !== undefined && value !== ''));
-}
 
 /** Keeps n8n errors as they are and wraps anything else, so the UI shows the item and context. */
 function asNodeError(
@@ -107,6 +82,16 @@ export class Verimor implements INodeType {
 						action: 'Get the SMS balance',
 					},
 					{
+						name: 'Get Many Inbound Messages',
+						value: 'getInboundMessages',
+						action: 'Get many inbound SMS messages',
+					},
+					{
+						name: 'Get Many Sender IDs',
+						value: 'getSenderIds',
+						action: 'Get many SMS senders',
+					},
+					{
 						name: 'Get Status',
 						value: 'getStatus',
 						action: 'Get SMS delivery status',
@@ -115,6 +100,12 @@ export class Verimor implements INodeType {
 						name: 'Send',
 						value: 'send',
 						action: 'Send an SMS',
+					},
+					{
+						name: 'Send OTP',
+						value: 'sendOtp',
+						action: 'Send a one time password by SMS',
+						description: 'Send a verification code to one number',
 					},
 				],
 				default: 'send',
@@ -131,6 +122,11 @@ export class Verimor implements INodeType {
 						value: 'rawRequest',
 						action: 'Send a raw switch API request',
 						description: 'Call any Switch operation directly',
+					},
+					{
+						name: 'Get Many Call Records',
+						value: 'getCallRecords',
+						action: 'Get many call records',
 					},
 					{
 						name: 'Originate Call',
@@ -154,6 +150,22 @@ export class Verimor implements INodeType {
 						description: 'Call any WhatsApp operation directly',
 					},
 					{
+						name: 'Get Many Messages',
+						value: 'getMessages',
+						action: 'Get many whats app messages',
+					},
+					{
+						name: 'Get Message',
+						value: 'getMessage',
+						action: 'Get a whats app message',
+					},
+					{
+						name: 'Send Bulk Message',
+						value: 'sendBulk',
+						action: 'Send a template to many numbers',
+						description: 'Queue one template for up to 10,000 recipients',
+					},
+					{
 						name: 'Send OTP',
 						value: 'sendOtp',
 						action: 'Send a one time password template',
@@ -174,7 +186,10 @@ export class Verimor implements INodeType {
 				type: 'notice',
 				default: '',
 				displayOptions: {
-					show: { resource: ['sms', 'switch', 'whatsapp'], operation: ['send', 'originate', 'sendOtp', 'sendUtility'] },
+					show: {
+						resource: ['sms', 'switch', 'whatsapp'],
+						operation: ['send', 'sendOtp', 'originate', 'sendUtility', 'sendBulk'],
+					},
 				},
 			},
 			{
@@ -243,6 +258,124 @@ export class Verimor implements INodeType {
 						type: 'string',
 						default: '',
 						placeholder: '48:00',
+					},
+				],
+			},
+
+			// SMS: send OTP
+			{
+				displayName: 'Destination',
+				name: 'destination',
+				type: 'string',
+				required: true,
+				default: '',
+				placeholder: '905001112233',
+				description: 'One phone number in international format',
+				displayOptions: { show: { resource: ['sms'], operation: ['sendOtp'] } },
+			},
+			{
+				displayName: 'Code',
+				name: 'code',
+				type: 'string',
+				default: '',
+				placeholder: '482931',
+				description: 'The verification code. Required unless you set a Message without {code}.',
+				displayOptions: { show: { resource: ['sms'], operation: ['sendOtp'] } },
+			},
+			{
+				displayName: 'Additional Fields',
+				name: 'otpFields',
+				type: 'collection',
+				placeholder: 'Add Field',
+				default: {},
+				displayOptions: { show: { resource: ['sms'], operation: ['sendOtp'] } },
+				options: [
+					{
+						displayName: 'Custom ID',
+						name: 'customId',
+						type: 'string',
+						default: '',
+						description: 'Your own reference, usable later with Get Status',
+					},
+					{
+						displayName: 'Language',
+						name: 'language',
+						type: 'options',
+						options: [
+							{ name: 'English', value: 'en' },
+							{ name: 'Turkish', value: 'tr' },
+						],
+						default: 'tr',
+						description: 'Language of the built-in message template; ignored when you set a Message',
+					},
+					{
+						displayName: 'Message',
+						name: 'message',
+						type: 'string',
+						typeOptions: { rows: 3 },
+						default: '',
+						description: 'Your own text instead of the template; {code} is replaced with the code',
+					},
+					{
+						displayName: 'Sender (Header)',
+						name: 'sender',
+						type: 'string',
+						default: '',
+						description: 'Overrides the default sender of the credential for this message',
+					},
+				],
+			},
+
+			// Shared by every "Get Many" action
+			{
+				displayName: 'Return All',
+				name: 'returnAll',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to return all results or only up to a given limit',
+				displayOptions: { show: { operation: ['getInboundMessages', 'getCallRecords', 'getMessages'] } },
+			},
+			{
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
+				typeOptions: { minValue: 1 },
+				default: 50,
+				description: 'Max number of results to return',
+				displayOptions: {
+					show: { operation: ['getInboundMessages', 'getCallRecords', 'getMessages'], returnAll: [false] },
+				},
+			},
+
+			// SMS: inbound messages
+			{
+				displayName: 'Filters',
+				name: 'inboundFilters',
+				type: 'collection',
+				placeholder: 'Add Filter',
+				default: {},
+				displayOptions: { show: { resource: ['sms'], operation: ['getInboundMessages'] } },
+				options: [
+					{
+						displayName: 'After Message ID',
+						name: 'afterMessageId',
+						type: 'number',
+						default: 0,
+						description: 'Only messages with a larger ID, useful for polling',
+					},
+					{
+						displayName: 'From Time',
+						name: 'fromTime',
+						type: 'string',
+						default: '',
+						placeholder: '2026-10-01 00:00:00',
+					},
+					{
+						displayName: 'To Time',
+						name: 'toTime',
+						type: 'string',
+						default: '',
+						placeholder: '2026-10-02 00:00:00',
 					},
 				],
 			},
@@ -316,6 +449,75 @@ export class Verimor implements INodeType {
 				],
 			},
 
+			// Switch: call records
+			{
+				displayName: 'Filters',
+				name: 'cdrFilters',
+				type: 'collection',
+				placeholder: 'Add Filter',
+				default: {},
+				displayOptions: { show: { resource: ['switch'], operation: ['getCallRecords'] } },
+				options: [
+					{
+						displayName: 'Caller ID Number',
+						name: 'callerIdNumber',
+						type: 'string',
+						default: '',
+					},
+					{
+						displayName: 'Destination Number',
+						name: 'destinationNumber',
+						type: 'string',
+						default: '',
+					},
+					{
+						displayName: 'Direction',
+						name: 'direction',
+						type: 'string',
+						default: '',
+						description: 'Call direction as Verimor reports it, for example inbound or outbound',
+					},
+					{
+						displayName: 'Missed Only',
+						name: 'missed',
+						type: 'boolean',
+						default: false,
+						description: 'Whether to return only missed calls (on) or only answered calls (off)',
+					},
+					{
+						displayName: 'Queue',
+						name: 'queue',
+						type: 'string',
+						default: '',
+					},
+					{
+						displayName: 'Recording',
+						name: 'recordingPresent',
+						type: 'options',
+						options: [
+							{ name: 'Deleted', value: 'deleted' },
+							{ name: 'Has Recording', value: 'true' },
+							{ name: 'No Recording', value: 'false' },
+						],
+						default: 'true',
+					},
+					{
+						displayName: 'Started After',
+						name: 'startFrom',
+						type: 'string',
+						default: '',
+						placeholder: '2026-10-01 00:00:00',
+					},
+					{
+						displayName: 'Started Before',
+						name: 'startTo',
+						type: 'string',
+						default: '',
+						placeholder: '2026-10-02 00:00:00',
+					},
+				],
+			},
+
 			// WhatsApp: templates
 			{
 				displayName: 'To',
@@ -327,27 +529,116 @@ export class Verimor implements INodeType {
 				displayOptions: { show: { resource: ['whatsapp'], operation: ['sendOtp', 'sendUtility'] } },
 			},
 			{
+				displayName: 'Recipients',
+				name: 'recipients',
+				type: 'string',
+				required: true,
+				default: '',
+				placeholder: '905001112233, 905004445566',
+				description: 'Phone numbers in international format, separated by commas (up to 10,000)',
+				displayOptions: { show: { resource: ['whatsapp'], operation: ['sendBulk'] } },
+			},
+			{
 				displayName: 'Template Name',
 				name: 'templateName',
 				type: 'string',
 				required: true,
 				default: '',
-				displayOptions: { show: { resource: ['whatsapp'], operation: ['sendOtp', 'sendUtility'] } },
+				displayOptions: { show: { resource: ['whatsapp'], operation: ['sendOtp', 'sendUtility', 'sendBulk'] } },
 			},
 			{
 				displayName: 'Language',
 				name: 'language',
 				type: 'string',
 				default: 'tr',
-				displayOptions: { show: { resource: ['whatsapp'], operation: ['sendOtp', 'sendUtility'] } },
+				displayOptions: { show: { resource: ['whatsapp'], operation: ['sendOtp', 'sendUtility', 'sendBulk'] } },
 			},
 			{
 				displayName: 'Template Parameters',
 				name: 'templateParameters',
 				type: 'string',
 				default: '',
-				description: 'Values for the template placeholders, separated by commas',
-				displayOptions: { show: { resource: ['whatsapp'], operation: ['sendOtp', 'sendUtility'] } },
+				description: 'Values for the template placeholders, separated by commas; Send Bulk Message uses the same values for every recipient',
+				displayOptions: { show: { resource: ['whatsapp'], operation: ['sendOtp', 'sendUtility', 'sendBulk'] } },
+			},
+
+			// WhatsApp: message lookups
+			{
+				displayName: 'Message Reference',
+				name: 'messageRef',
+				type: 'string',
+				required: true,
+				default: '',
+				description: 'The message ID returned when sending, or the WhatsApp message ID',
+				displayOptions: { show: { resource: ['whatsapp'], operation: ['getMessage'] } },
+			},
+			{
+				displayName: 'Filters',
+				name: 'messageFilters',
+				type: 'collection',
+				placeholder: 'Add Filter',
+				default: {},
+				displayOptions: { show: { resource: ['whatsapp'], operation: ['getMessages'] } },
+				options: [
+					{
+						displayName: 'Category',
+						name: 'category',
+						type: 'options',
+						options: [
+							{ name: 'Bulk', value: 'bulk' },
+							{ name: 'Chat', value: 'chat' },
+							{ name: 'OTP', value: 'otp' },
+							{ name: 'Utility', value: 'utility' },
+						],
+						default: 'otp',
+					},
+					{
+						displayName: 'Since',
+						name: 'since',
+						type: 'dateTime',
+						default: '',
+						description: 'Messages created at or after this time',
+					},
+					{
+						displayName: 'Status',
+						name: 'status',
+						type: 'options',
+						options: [
+							{ name: 'Delivered', value: 'delivered' },
+							{ name: 'Failed', value: 'failed' },
+							{ name: 'Pending', value: 'pending' },
+							{ name: 'Read', value: 'read' },
+							{ name: 'Sent', value: 'sent' },
+						],
+						default: 'delivered',
+					},
+					{
+						displayName: 'Template Name',
+						name: 'templateName',
+						type: 'string',
+						default: '',
+					},
+					{
+						displayName: 'To',
+						name: 'to',
+						type: 'string',
+						default: '',
+						placeholder: '905001112233',
+					},
+					{
+						displayName: 'Until',
+						name: 'until',
+						type: 'dateTime',
+						default: '',
+						description: 'Messages created before this time',
+					},
+					{
+						displayName: 'WhatsApp Message ID',
+						name: 'waMessageId',
+						type: 'string',
+						default: '',
+					},
+				],
 			},
 
 			// Advanced: raw request
@@ -430,109 +721,4 @@ export class Verimor implements INodeType {
 
 		return [returnData];
 	}
-}
-
-async function run(
-	context: IExecuteFunctions,
-	itemIndex: number,
-	resource: Product,
-	operation: string,
-): Promise<INodeExecutionData[]> {
-	const item = (json: IDataObject): INodeExecutionData[] => [{ json, pairedItem: { item: itemIndex } }];
-
-	if (operation === 'rawRequest') {
-		const target = findOperation(resource, context.getNodeParameter('operationId', itemIndex) as string);
-		const body = parseJson(context, 'body', itemIndex);
-		const result = await callOperation(context, itemIndex, target, {
-			path: parseJson(context, 'pathParameters', itemIndex) as Record<string, string>,
-			query: parseJson(context, 'queryParameters', itemIndex),
-			body: Object.keys(body).length > 0 || Object.values(target.credentials).includes('body') ? body : undefined,
-		});
-		if (target.responseKind === 'binary') {
-			const binary = await context.helpers.prepareBinaryData(
-				Buffer.from(result.body as ArrayBuffer),
-				`${target.operationId}.bin`,
-			);
-			return [{ json: { statusCode: result.statusCode }, binary: { data: binary }, pairedItem: { item: itemIndex } }];
-		}
-		return item({ statusCode: result.statusCode, body: result.body as IDataObject });
-	}
-
-	if (resource === 'sms' && operation === 'send') {
-		const fields = context.getNodeParameter('additionalFields', itemIndex, {}) as IDataObject;
-		const message = context.getNodeParameter('message', itemIndex) as string;
-		const destinations = (context.getNodeParameter('destinations', itemIndex) as string)
-			.split(',')
-			.map((value) => value.trim())
-			.filter((value) => value !== '');
-		if (destinations.length === 0) {
-			throw new NodeOperationError(context.getNode(), 'At least one destination is required', { itemIndex });
-		}
-		const body = compact({
-			source_addr: fields.sourceAddr as string,
-			valid_for: fields.validFor as string,
-			send_at: fields.sendAt as string,
-			custom_id: fields.customId as string,
-			iys_recipient_type: fields.iysRecipientType as string,
-			is_commercial: fields.isCommercial === true ? true : undefined,
-			messages: destinations.map((dest) => ({ dest, msg: message })),
-		});
-		const result = await callOperation(context, itemIndex, findOperation('sms', 'sendSmsJson'), { body });
-		return item({ campaignId: String(result.body).trim() });
-	}
-
-	if (resource === 'sms' && operation === 'getBalance') {
-		const result = await callOperation(context, itemIndex, findOperation('sms', 'get_v2_balance'), {});
-		return item({ balance: String(result.body).trim() });
-	}
-
-	if (resource === 'sms' && operation === 'getStatus') {
-		const lookUpBy = context.getNodeParameter('lookUpBy', itemIndex) as string;
-		const value = context.getNodeParameter('lookUpValue', itemIndex) as string;
-		const query = lookUpBy === 'customId' ? { custom_id: value } : { id: value };
-		const result = await callOperation(context, itemIndex, findOperation('sms', 'getSmsStatus'), { query });
-		if (!Array.isArray(result.body)) {
-			throw new NodeOperationError(context.getNode(), 'Verimor returned an unexpected status response', {
-				itemIndex,
-			});
-		}
-		return item({ statuses: result.body as IDataObject[] });
-	}
-
-	if (resource === 'switch' && operation === 'originate') {
-		const fields = context.getNodeParameter('callFields', itemIndex, {}) as IDataObject;
-		const body = compact({
-			extension: context.getNodeParameter('extension', itemIndex) as string,
-			destination: context.getNodeParameter('destination', itemIndex) as string,
-			caller_id: fields.callerId as string,
-			manual_answer: fields.manualAnswer === true ? true : undefined,
-			timeout: fields.timeout as number,
-		});
-		const result = await callOperation(context, itemIndex, findOperation('switch', 'originateCallPost'), { body });
-		return item({ callId: String(result.body).trim() });
-	}
-
-	if (resource === 'whatsapp' && (operation === 'sendOtp' || operation === 'sendUtility')) {
-		const parameters = (context.getNodeParameter('templateParameters', itemIndex, '') as string)
-			.split(',')
-			.map((value) => value.trim())
-			.filter((value) => value !== '');
-		const body = compact({
-			to: context.getNodeParameter('to', itemIndex) as string,
-			template_name: context.getNodeParameter('templateName', itemIndex) as string,
-			language: context.getNodeParameter('language', itemIndex, '') as string,
-			parameters: parameters.length > 0 ? parameters : undefined,
-		});
-		const id = operation === 'sendOtp' ? 'send_otp_v1_messages_otp_post' : 'send_utility_v1_messages_utility_post';
-		const result = await callOperation(context, itemIndex, findOperation('whatsapp', id), { body });
-		const response = result.body as IDataObject;
-		if (!response || typeof response !== 'object' || !response.id || !response.status) {
-			throw new NodeOperationError(context.getNode(), 'Verimor returned an unexpected message response', {
-				itemIndex,
-			});
-		}
-		return item(response);
-	}
-
-	throw new NodeOperationError(context.getNode(), `Unsupported operation ${resource}.${operation}`, { itemIndex });
 }

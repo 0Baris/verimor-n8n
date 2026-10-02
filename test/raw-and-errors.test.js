@@ -8,10 +8,10 @@ const { node, OPERATIONS } = load();
 const BASES = { sms: 'http://sms.test', switch: 'http://switch.test', whatsapp: 'http://whatsapp.test' };
 const WIRE = { username: 'sms-user', password: 'sms-password', key: 'switch-key', 'x-api-key': 'whatsapp-key' };
 
-test('the generated table lists all 68 operations', () => {
-	assert.equal(OPERATIONS.length, 68);
+test('the generated table lists all 72 operations', () => {
+	assert.equal(OPERATIONS.length, 72);
 	const count = (product) => OPERATIONS.filter((o) => o.product === product).length;
-	assert.deepEqual([count('sms'), count('switch'), count('whatsapp')], [13, 52, 3]);
+	assert.deepEqual([count('sms'), count('switch'), count('whatsapp')], [14, 52, 6]);
 });
 
 for (const operation of OPERATIONS) {

@@ -46,6 +46,14 @@ const workflows = [
 		verimor(5, 'OTP', { resource: 'whatsapp', operation: 'sendOtp', to: '905001112233', templateName: 'otp', language: 'tr', templateParameters: '123456' }, wa),
 		verimor(6, 'Raw Queues', { resource: 'switch', operation: 'rawRequest', operationId: 'getQueues', pathParameters: '{}', queryParameters: '{}', body: '{}' }, sw),
 	]),
+	chain('verimorListsAndOtp', [
+		trigger,
+		verimor(1, 'SMS OTP', { resource: 'sms', operation: 'sendOtp', destination: '905001112233', code: '482931', otpFields: {} }, sms),
+		verimor(2, 'Bulk', { resource: 'whatsapp', operation: 'sendBulk', recipients: '905001112233, 905004445566', templateName: 'kampanya', language: 'tr', templateParameters: 'Ekim' }, wa),
+		verimor(3, 'Call Records', { resource: 'switch', operation: 'getCallRecords', returnAll: true, cdrFilters: {} }, sw),
+		// Call Records outputs two items; without executeOnce n8n would list messages once per item.
+		{ ...verimor(4, 'Messages', { resource: 'whatsapp', operation: 'getMessages', returnAll: true, messageFilters: {} }, wa), executeOnce: true },
+	]),
 	chain('verimorRejected', [trigger, verimor(1, 'Balance', { resource: 'sms', operation: 'getBalance' }, rejected)]),
 ];
 

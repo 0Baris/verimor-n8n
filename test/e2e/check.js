@@ -24,6 +24,14 @@ assert.deepEqual(outputs(actions), {
 	'Raw Queues': { statusCode: 200, body: [{ number: '100', name: 'Sales' }] },
 });
 
+const lists = read('/tmp/lists.json');
+assert.equal(lists.data.resultData.error, undefined, 'the list workflow must succeed');
+const runItems = (name) => lists.data.resultData.runData[name][0].data.main[0].map((item) => item.json);
+assert.deepEqual(runItems('SMS OTP'), [{ campaignId: '55555555555555555555' }]);
+assert.equal(runItems('Bulk')[0].status, 'queued');
+assert.deepEqual(runItems('Call Records'), [{ call_uuid: 'a' }, { call_uuid: 'b' }]);
+assert.deepEqual(runItems('Messages'), [{ id: 'm1' }, { id: 'm2' }, { id: 'm3' }]);
+
 const requests = fs.readFileSync('/tmp/requests.log', 'utf8').trim().split('\n').map((line) => JSON.parse(line));
 const sent = JSON.parse(requests.find((r) => r.path === '/v2/send.json').body);
 assert.deepEqual(sent, {
@@ -40,4 +48,10 @@ const rejected = read('/tmp/rejected.json');
 assert.match(String(rejected.data.resultData.error?.message), /HTTP 401: invalid credentials/);
 assert.equal(rejectedText.includes('rejected-secret'), false, 'the execution data must not contain the password');
 assert.equal(requests.filter((r) => r.query.includes('rejected-user')).length, 1, 'a rejected call is not retried');
-console.log('Real n8n run passed for SMS, Switch, WhatsApp, raw access and a rejected call.');
+const otp = JSON.parse(requests.find((r) => r.path === '/v2/otp').body);
+assert.deepEqual(otp, { dest: '905001112233', code: '482931', header: 'MOCKSENDER', username: 'mock-user', password: 'mock-pass' });
+const bulk = JSON.parse(requests.find((r) => r.path === '/v1/messages/bulk').body);
+assert.deepEqual(bulk.recipients, [{ to: '905001112233', parameters: ['Ekim'] }, { to: '905004445566', parameters: ['Ekim'] }]);
+assert.equal(requests.filter((r) => r.path === '/cdrs').length, 2);
+assert.equal(requests.filter((r) => r.path === '/v1/messages').length, 2);
+console.log('Real n8n run passed for SMS, Switch, WhatsApp, OTP, bulk, paged lists, raw access and a rejected call.');

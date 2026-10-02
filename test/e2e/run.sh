@@ -13,4 +13,5 @@ n8n import:credentials --input=/tmp/fixtures/credentials.json >/dev/null 2>&1
 n8n import:workflow --input=/tmp/fixtures/workflows.json >/dev/null 2>&1
 n8n execute --id=verimorActions --rawOutput >/tmp/actions.json 2>/tmp/actions.err || { cat /tmp/actions.err; exit 1; }
 n8n execute --id=verimorRejected --rawOutput >/tmp/rejected.json 2>/tmp/rejected.err || true
+n8n execute --id=verimorListsAndOtp --rawOutput >/tmp/lists.json 2>/tmp/lists.err || { cat /tmp/lists.err; exit 1; }
 node /e2e/test/e2e/check.js
