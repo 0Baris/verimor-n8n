@@ -16,10 +16,14 @@ In n8n, use **Settings → Community Nodes → Install** with `n8n-nodes-verimor
 
 | Resource | Action |
 | --- | --- |
-| SMS | Send, Get Balance, Get Status (by campaign ID or custom ID) |
-| Switch | Originate Call |
-| WhatsApp | Send OTP, Send Utility Message |
-| Every product | Advanced: Raw Request — calls any of the product's 68 operations directly |
+| SMS | Send, Send OTP, Get Balance, Get Status (by campaign ID or custom ID), Get Many Inbound Messages, Get Many Sender IDs |
+| Switch | Originate Call, Get Many Call Records |
+| WhatsApp | Send OTP, Send Utility Message, Send Bulk Message (up to 10,000 recipients), Get Message, Get Many Messages |
+| Every product | Advanced: Raw Request — calls any of the product's 72 operations directly |
+
+"Get Many" actions offer **Return All** or a **Limit** and page through Verimor's results for you; each record becomes its own item. Like other n8n nodes, an action runs once per input item, so turn on **Execute Once** in the node settings when a list action follows a node that outputs several items.
+
+The node can also be used as a tool by n8n's AI Agent (`N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true` on self-hosted n8n).
 
 ## Credentials
 

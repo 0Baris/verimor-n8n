@@ -16,10 +16,14 @@ n8n'de **Settings → Community Nodes → Install** ile `n8n-nodes-verimor` pake
 
 | Kaynak | Eylem |
 | --- | --- |
-| SMS | Send, Get Balance, Get Status (kampanya ID veya Custom ID ile) |
-| Switch | Originate Call |
-| WhatsApp | Send OTP, Send Utility Message |
-| Her ürün | Advanced: Raw Request — ürünün 68 operasyonundan herhangi birini doğrudan çağırır |
+| SMS | Send, Send OTP, Get Balance, Get Status (kampanya ID veya Custom ID ile), Get Many Inbound Messages, Get Many Sender IDs |
+| Switch | Originate Call, Get Many Call Records |
+| WhatsApp | Send OTP, Send Utility Message, Send Bulk Message (en fazla 10.000 alıcı), Get Message, Get Many Messages |
+| Her ürün | Advanced: Raw Request — ürünün 72 operasyonundan herhangi birini doğrudan çağırır |
+
+"Get Many" eylemleri **Return All** veya **Limit** seçeneği sunar ve Verimor sonuçlarını sizin yerinize sayfalar; her kayıt ayrı bir item olur. Diğer n8n node'ları gibi eylem her giriş item'ı için bir kez çalışır; birden fazla item üreten bir node'dan sonra liste eylemi kullanıyorsanız node ayarlarında **Execute Once**'ı açın.
+
+Node, n8n'in AI Agent'ı tarafından araç olarak da kullanılabilir (self-hosted n8n'de `N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true`).
 
 ## Credentials
 

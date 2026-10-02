@@ -169,6 +169,18 @@ export const OPERATIONS: readonly VerimorOperation[] = [
 	},
 	{
 		product: 'sms',
+		operationId: 'sendOtp',
+		identity: 'campaigns.sendOtp',
+		method: 'POST',
+		path: '/v2/otp',
+		credentials: {
+			password: 'body',
+			username: 'body',
+		},
+		responseKind: 'text',
+	},
+	{
+		product: 'sms',
 		operationId: 'sendSmsJson',
 		identity: 'campaigns.send',
 		method: 'POST',
@@ -750,11 +762,44 @@ export const OPERATIONS: readonly VerimorOperation[] = [
 	},
 	{
 		product: 'whatsapp',
+		operationId: 'get_message_v1_messages__message_ref__get',
+		identity: 'messages.getMessage',
+		method: 'GET',
+		path: '/v1/messages/{message_ref}',
+		credentials: {
+			'x-api-key': 'header',
+		},
+		responseKind: 'json',
+	},
+	{
+		product: 'whatsapp',
 		operationId: 'health_health_get',
 		identity: 'health.health',
 		method: 'GET',
 		path: '/health',
 		credentials: {},
+		responseKind: 'json',
+	},
+	{
+		product: 'whatsapp',
+		operationId: 'list_messages_v1_messages_get',
+		identity: 'messages.listMessages',
+		method: 'GET',
+		path: '/v1/messages',
+		credentials: {
+			'x-api-key': 'header',
+		},
+		responseKind: 'json',
+	},
+	{
+		product: 'whatsapp',
+		operationId: 'send_bulk_v1_messages_bulk_post',
+		identity: 'messages.sendBulk',
+		method: 'POST',
+		path: '/v1/messages/bulk',
+		credentials: {
+			'x-api-key': 'header',
+		},
 		responseKind: 'json',
 	},
 	{

@@ -1,5 +1,17 @@
 # Değişiklik günlüğü / Changelog
 
+## 0.2.0
+
+- Yeni eylemler: SMS Send OTP, Get Many Inbound Messages, Get Many Sender IDs; Switch Get Many Call Records; WhatsApp Send Bulk Message, Get Message, Get Many Messages.
+- "Get Many" eylemleri Return All / Limit ile sayfalamayı kendisi yapar ve her kaydı ayrı item olarak döndürür.
+- Raw istek artık Verimor'un yeni operasyonları dahil 72 operasyonu kapsar.
+- Gerçek bir n8n (2.41.5) içinde loopback mock'a karşı çalışan uçtan uca test CI'a eklendi; metin yanıtlar artık sayıya çevrilmez (ör. `"42.50"`).
+
+- New actions: SMS Send OTP, Get Many Inbound Messages, Get Many Sender IDs; Switch Get Many Call Records; WhatsApp Send Bulk Message, Get Message, Get Many Messages.
+- "Get Many" actions page through results with Return All / Limit and return one item per record.
+- The raw request covers all 72 operations, including Verimor's new ones.
+- An end-to-end test inside a real n8n (2.41.5) against a loopback mock runs in CI; text responses are no longer parsed as numbers (for example `"42.50"`).
+
 ## 0.1.0 - Yayın adayı / Release candidate
 
 - SMS gönderme, bakiye ve durum; Switch arama başlatma; WhatsApp OTP ve utility mesajı; her ürün için gelişmiş raw istek (68 operasyon).
