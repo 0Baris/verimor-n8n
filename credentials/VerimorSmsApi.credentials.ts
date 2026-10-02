@@ -42,7 +42,8 @@ export class VerimorSmsApi implements ICredentialType {
 			name: 'baseUrl',
 			type: 'string',
 			default: 'https://sms.verimor.com.tr',
-			description: 'Change only to point at a test server',
+			description:
+				"Verimor's address by default. Change it to send requests to another server, such as your own proxy; an IP, a port and a path prefix are kept.",
 		},
 	];
 

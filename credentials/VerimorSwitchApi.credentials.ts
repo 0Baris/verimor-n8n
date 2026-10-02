@@ -28,7 +28,8 @@ export class VerimorSwitchApi implements ICredentialType {
 			name: 'baseUrl',
 			type: 'string',
 			default: 'https://api.bulutsantralim.com',
-			description: 'Change only to point at a test server',
+			description:
+				"Verimor's address by default. Change it to send requests to another server, such as your own proxy; an IP, a port and a path prefix are kept.",
 		},
 	];
 

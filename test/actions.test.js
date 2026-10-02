@@ -123,3 +123,17 @@ test('text responses are requested as text so n8n does not parse them as numbers
 	await node.execute.call(status.ctx);
 	assert.equal(status.requests[0].encoding, undefined);
 });
+
+test('the credential base URL defaults to Verimor and keeps a custom IP, port and path', async () => {
+	const custom = {
+		verimorSmsApi: { username: 'u', password: 'p', defaultSender: '', baseUrl: 'http://10.0.0.5:8080/verimor/' },
+	};
+	const own = context({ resource: 'sms', operation: 'getBalance' }, [{ statusCode: 200, body: '1', headers: {} }], custom);
+	await node.execute.call(own.ctx);
+	assert.equal(own.requests[0].url, 'http://10.0.0.5:8080/verimor/v2/balance');
+
+	const empty = { verimorSmsApi: { username: 'u', password: 'p', defaultSender: '', baseUrl: '' } };
+	const fallback = context({ resource: 'sms', operation: 'getBalance' }, [{ statusCode: 200, body: '1', headers: {} }], empty);
+	await node.execute.call(fallback.ctx);
+	assert.equal(fallback.requests[0].url, 'https://sms.verimor.com.tr/v2/balance');
+});

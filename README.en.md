@@ -33,7 +33,7 @@ Each product has its own credential:
 - **Verimor Switch API**: API key, base URL. Test: queue list.
 - **Verimor WhatsApp API**: API key (`x-api-key`), base URL. The test checks reachability only; WhatsApp has no authenticated endpoint without side effects.
 
-Change the base URL only to point at a test server.
+Base URL defaults to Verimor's address (SMS `https://sms.verimor.com.tr`, Switch `https://api.bulutsantralim.com`, WhatsApp `https://wapi.verimor.com.tr`). Change it to send the requests to another server, for example your own proxy or a test server. Use an absolute `http://` or `https://` URL; an IP address, a port and a path prefix such as `http://10.0.0.5:8080/verimor` are kept.
 
 ## Safety and cost
 

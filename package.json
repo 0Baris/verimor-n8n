@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-verimor",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"description": "Unofficial community n8n node for the Verimor SMS, Switch and WhatsApp APIs. Not validated against the live Verimor services.",
 	"license": "MIT",
 	"homepage": "https://github.com/0Baris/verimor-n8n",
