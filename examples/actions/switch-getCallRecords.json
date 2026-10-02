@@ -1,0 +1,52 @@
+{
+  "name": "Verimor switch – Get Many Call Records",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "switch",
+        "operation": "getCallRecords",
+        "returnAll": false,
+        "limit": 50,
+        "cdrFilters": {}
+      },
+      "id": "verimor",
+      "name": "Verimor",
+      "type": "n8n-nodes-verimor.verimor",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "verimorSwitchApi": {
+          "name": "Verimor Switch account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Verimor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {}
+}

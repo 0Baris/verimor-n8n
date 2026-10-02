@@ -35,6 +35,12 @@ Her ürünün ayrı credential'ı vardır:
 
 Base URL varsayılan olarak Verimor'un adresidir (SMS `https://sms.verimor.com.tr`, Switch `https://api.bulutsantralim.com`, WhatsApp `https://wapi.verimor.com.tr`). İstekleri başka bir sunucuya, örneğin kendi proxy'nize veya bir test sunucusuna göndermek için değiştirebilirsiniz. Mutlak bir `http://` veya `https://` adresi girin; IP, port ve `http://10.0.0.5:8080/verimor` gibi bir alt yol korunur.
 
+## Örnek workflow'lar
+
+[`examples/`](examples/) altında içe aktarılabilir workflow'lar var: her eylem için bir tane ([`examples/actions/`](examples/actions/)) ve 72 operasyonun her biri için bir Raw Request ([`examples/raw/`](examples/raw/)). n8n'de **Import from File** ile açın, ardından Verimor düğümünde kendi credential'ınızı seçin. `test/examples.test.js` her birini mock ile çalıştırıp gönderdiği isteği doğrular.
+
+Yapay zekâ asistanları için tek dosyalık başvuru: [`llms.md`](llms.md).
+
 ## Güvenlik ve maliyet
 
 - Gönderim eylemleri gerçek mesaj veya arama üretir ve ücretli olabilir. n8n'in **Retry On Fail** ayarı kapalıyken node hiçbir isteği tekrarlamaz; açarsanız aynı mesaj birden fazla gidebilir.

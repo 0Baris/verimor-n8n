@@ -1,0 +1,52 @@
+{
+  "name": "Verimor sms – Get Many Inbound Messages",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "sms",
+        "operation": "getInboundMessages",
+        "returnAll": false,
+        "limit": 50,
+        "inboundFilters": {}
+      },
+      "id": "verimor",
+      "name": "Verimor",
+      "type": "n8n-nodes-verimor.verimor",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "verimorSmsApi": {
+          "name": "Verimor SMS account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Verimor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {}
+}

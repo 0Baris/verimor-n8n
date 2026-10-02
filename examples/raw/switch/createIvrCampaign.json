@@ -1,0 +1,53 @@
+{
+  "name": "Verimor switch – raw POST /ivr_campaigns.json",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "switch",
+        "operation": "rawRequest",
+        "operationId": "createIvrCampaign",
+        "pathParameters": "{}",
+        "queryParameters": "{}",
+        "body": "{\"call_type\": \"ivr\", \"name\": \"Memnuniyet anketi\", \"phone_list\": [{\"phone\": \"05111111111\", \"phrase\": \"#429 12/05/2017 #430 102.45 #431\", \"lang\": \"tr-TR\"}, {\"phone\": \"05111111112\", \"phrase\": \"#429 12/05/2017 #430 65.12 #431\", \"lang\": \"tr-TR\"}]}"
+      },
+      "id": "verimor",
+      "name": "Verimor",
+      "type": "n8n-nodes-verimor.verimor",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "verimorSwitchApi": {
+          "name": "Verimor Switch account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Verimor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {}
+}

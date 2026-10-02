@@ -35,6 +35,12 @@ Each product has its own credential:
 
 Base URL defaults to Verimor's address (SMS `https://sms.verimor.com.tr`, Switch `https://api.bulutsantralim.com`, WhatsApp `https://wapi.verimor.com.tr`). Change it to send the requests to another server, for example your own proxy or a test server. Use an absolute `http://` or `https://` URL; an IP address, a port and a path prefix such as `http://10.0.0.5:8080/verimor` are kept.
 
+## Example workflows
+
+[`examples/`](examples/) holds importable workflows: one per action ([`examples/actions/`](examples/actions/)) and a Raw Request for each of the 72 operations ([`examples/raw/`](examples/raw/)). Open one with **Import from File** in n8n, then pick your own credential on the Verimor node. `test/examples.test.js` runs each one against a mock and checks the request it sends.
+
+A single-file reference for AI assistants: [`llms.md`](llms.md).
+
 ## Safety and cost
 
 - Send actions create real messages or calls and may cost money. With n8n's **Retry On Fail** off the node never repeats a request; if you turn it on, the same message may go out more than once.

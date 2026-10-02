@@ -1,0 +1,53 @@
+{
+  "name": "Verimor sms – raw POST /v2/send.json",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "sms",
+        "operation": "rawRequest",
+        "operationId": "sendSmsJson",
+        "pathParameters": "{}",
+        "queryParameters": "{}",
+        "body": "{\"messages\": [{\"dest\": \"905111111111,905111111112\", \"msg\": \"Deneme Mesaj\"}]}"
+      },
+      "id": "verimor",
+      "name": "Verimor",
+      "type": "n8n-nodes-verimor.verimor",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "verimorSmsApi": {
+          "name": "Verimor SMS account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Verimor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {}
+}
