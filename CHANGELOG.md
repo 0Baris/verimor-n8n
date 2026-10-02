@@ -1,5 +1,12 @@
 # Değişiklik günlüğü / Changelog
 
+## 0.3.0
+
+- İçe aktarılabilir örnek workflow'lar: her eylem için bir tane (`examples/actions/`) ve 72 operasyonun her biri için bir Raw Request (`examples/raw/`). `test/examples.test.js` her birini mock ile çalıştırıp gönderdiği isteği doğrular.
+- Yapay zekâ asistanları için tek dosyalık başvuru: `llms.md`. Düğüm kodu 0.2.1 ile aynıdır.
+- Importable example workflows: one per action (`examples/actions/`) and a Raw Request for each of the 72 operations (`examples/raw/`). `test/examples.test.js` runs each one against a mock and checks the request it sends.
+- A single-file reference for AI assistants: `llms.md`. Node code is unchanged from 0.2.1.
+
 ## 0.2.1
 
 - Credential'lardaki Base URL açıklaması netleşti: varsayılan Verimor'un adresidir; kendi sunucunuz veya proxy için değiştirilebilir, IP, port ve alt yol korunur (testle doğrulandı).

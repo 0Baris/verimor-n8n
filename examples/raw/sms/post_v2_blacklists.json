@@ -1,0 +1,53 @@
+{
+  "name": "Verimor sms – raw POST /v2/blacklists",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "sms",
+        "operation": "rawRequest",
+        "operationId": "post_v2_blacklists",
+        "pathParameters": "{}",
+        "queryParameters": "{\"phones\": \"905001112233\"}",
+        "body": "{}"
+      },
+      "id": "verimor",
+      "name": "Verimor",
+      "type": "n8n-nodes-verimor.verimor",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "verimorSmsApi": {
+          "name": "Verimor SMS account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Verimor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {}
+}

@@ -1,0 +1,53 @@
+{
+  "name": "Verimor whatsapp – raw POST /v1/messages/otp",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "whatsapp",
+        "operation": "rawRequest",
+        "operationId": "send_otp_v1_messages_otp_post",
+        "pathParameters": "{}",
+        "queryParameters": "{}",
+        "body": "{\"to\": \"905001112233\", \"template_name\": \"siparis_onay\"}"
+      },
+      "id": "verimor",
+      "name": "Verimor",
+      "type": "n8n-nodes-verimor.verimor",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "verimorWhatsAppApi": {
+          "name": "Verimor WhatsApp account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Verimor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {}
+}

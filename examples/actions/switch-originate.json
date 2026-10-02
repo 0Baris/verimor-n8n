@@ -1,0 +1,52 @@
+{
+  "name": "Verimor switch – Originate Call",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "switch",
+        "operation": "originate",
+        "extension": "101",
+        "destination": "905001112233",
+        "callFields": {}
+      },
+      "id": "verimor",
+      "name": "Verimor",
+      "type": "n8n-nodes-verimor.verimor",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "verimorSwitchApi": {
+          "name": "Verimor Switch account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Verimor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {}
+}
